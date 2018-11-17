@@ -94,7 +94,7 @@ function main() {
 	
 	httpsReqDataStandard(cmd, options); //abfragen der Standart-Werte
 	
-	setTimeout(objtest(),5000); //Test ob Unterzähler - Objekte angelegt, wenn ja, Abfrage der Werte.
+	//setTimeout(objtest(),5000); //Test ob Unterzähler - Objekte angelegt, wenn ja, Abfrage der Werte.
 	
 	//überprüfung ob Namen der vorhandenen Unterzähler alle in Names enthalten sind, sonst löschen.
 	
