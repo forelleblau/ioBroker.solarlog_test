@@ -3,7 +3,6 @@
 		"name": "solarlog",
 		"version": "0.0.3",
 		"news": {
-			{
 			"0.0.3": {
 				"en": "better readme, import data of all inverters and meters",
 				"de": "Erweiterte Readme, Import der Daten aller Unterzähler"
