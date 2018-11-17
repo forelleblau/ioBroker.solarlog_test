@@ -378,16 +378,7 @@
 			"native": {
 					
 			}
-		},
-		{
-			"_id": "status",
-			"type": "channel",
-			"common": {
-				"name": "INV"
-			},
-			"native": {
-				
-			}
 		}
+	
 	]
 }
