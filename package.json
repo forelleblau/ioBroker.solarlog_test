@@ -1,5 +1,5 @@
 {
-	"name": "iobroker.solarlog",
+	"name": "iobroker.solarlog_test",
 	"version": "0.0.3",
 	"engines": {
     	"node": ">=6.0.0"
