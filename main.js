@@ -8,8 +8,17 @@
 
 const utils = require(__dirname + '/lib/utils'); // Get common adapter utils
 const adapter = new utils.Adapter('solarlog');
+var DeviceIpAdress;
 var https = require('http'); 
+const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
+var statusuz ="on";
+var numinv = 0;
 var names =[];
+var testend;
+var testj= 0;
+var testi= 0;
+
+
 
 let polling;
 
@@ -67,13 +76,13 @@ adapter.on('ready', function() {
 
 function main() {
     // Vars
-    const DeviceIpAdress = adapter.config.host;
+    DeviceIpAdress = adapter.config.host;
     const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
     var statusuz ="on";
 	var numinv = 0;
 	var data='{"608":null}';
 	var options = {
-		host: deviceIpAdress,
+		host: DeviceIpAdress,
 		path: cmd,
 		method: 'POST',
 		headers: {
@@ -90,21 +99,17 @@ function main() {
 	adapter.log.debug("Options: " + JSON.stringify(options));
 	adapter.log.debug("Data: " + JSON.stringify(data));
 
-    httpsReqNumInv(data, options, defobjUZ()); //Anlegen eines Channels pro Unterzähler mit den Objekten Wert und Status
+    httpsReqNumInv(data, options, numinv, defobjUZ()); //Anlegen eines Channels pro Unterzähler mit den Objekten Wert und Status
 	
-	httpsReqDataStandard(cmd, options); //abfragen der Standart-Werte
+	testend = setInterval(test, 2000); //überprüfen ob alle Channels angelegt sind.
+            
 	
-	//setTimeout(objtest(),5000); //Test ob Unterzähler - Objekte angelegt, wenn ja, Abfrage der Werte.
+	setTimeout(function(){httpsReqDataStandard(cmd);},300000); //abfragen der Standard-Werte
 	
-	//überprüfung ob Namen der vorhandenen Unterzähler alle in Names enthalten sind, sonst löschen.
-	
-	httpsReqDataUZ(options);
-
-	
+		
     if (!polling) {
         polling = setTimeout(function repeat() { // poll states every [30] seconds
-            httpsReqDataStandard(cmd, options, );
-			setTimeout(httpsReqDataUZ(cmd, options),3000);
+            httpsReqDataStandard(cmd, httpsReqDataUZ(cmd, names));
 			setTimeout(repeat, pollingTime);
         }, pollingTime);
     } // endIf
@@ -115,28 +120,46 @@ function main() {
    
 } // endMain	
 
-function objtest(){  //Prüft ob alle Objekte angelegt sind und löst die Ermittlung der Werte aus, wenn erfüllt.
-	var j = 1;
-	if (names.foreach(uz) {adapter.getObject('INV.' + uz);}){
-		httpsReqDataUZ(cmd, options);
-	clearInterval();
-		  } 
-	else {
-		while(j<20){
-			adapter.log.debug("Anlegen der Unterzähler - Objete noch nicht abgeschlossen");
-			j++;
-			if (names.foreach(uz) {adapter.getObject('INV.' + uz);}){
-				httpsReqDataUZ(cmd, options);
-				clearInterval();
-				} //endIf
-		}
-		adapter.log.warn("Fehler: Unterzähler - Objekte nicht richtig angelegt");
-		clearInterval();
-		}
-} // End objtest
+function test() {
+	adapter.getState("info.numinv", function (err, obj) {
+		if (obj){
+        numinv = obj.val;
+		adapter.log.debug("Inverters to test: " + names);
+		adapter.log.debug("numinv: " + numinv);
+		names.forEach(check);
+		adapter.log.debug("Anzahl positiv: " + testi);
+			if (testi==numinv){
+				adapter.log.info("Alle WR/Meter gefunden");
+				adapter.log.debug("Names: " + names);
+				httpsReqDataUZ(cmd, names);
+				clearInterval(testend);	
+				}
+			else {
+			testi=0;
+			adapter.log.warn("Nicht alle WR/Meter gefunden");
+			testj++;
+			  if (testj>3){
+				adapter.log.warn("Fehler, noch nicht alle Unterzähler angelegt");
+				clearInterval(testend);
+				}
+			}
+		}	
+	});
+} // END test()
 
 
-function httpsReqNumInv(data, options) { //Ermittelt die Anzahl Unterzähler und löst das Anlegen der Channels/Objekte aus.
+function check(uz) {   
+	adapter.getObject('INV.' + uz, function(err, obj) {
+		if (obj) {		
+		adapter.log.debug("Adapter " + uz + " vorhanden");
+        testi++;
+		}
+        else{adapter.log.warn("Adapter " + uz + " nicht vorhanden");
+        }
+	});
+} // END check()
+
+function httpsReqNumInv(data, options, numinv) { //Ermittelt die Anzahl Unterzähler und löst das Anlegen der Channels/Objekte aus.
 	var req = https.request(options, function(res) {
     adapter.log.debug("http Status: " + res.statusCode);
     adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (RÃ¼ckmeldung vom Webserver)
@@ -152,7 +175,8 @@ function httpsReqNumInv(data, options) { //Ermittelt die Anzahl Unterzähler und
         // ...und/oder das Gesamtergebnis (body).
         adapter.log.debug("body: " + body);
 		try{
-			dataJ=JSON.parse(body);
+			var dataJ=JSON.parse(body);
+			
 			while (statusuz != "OFFLINE" && numinv < 100) {
 				statusuz = (dataJ[608][numinv.toString()]);  
 					if (statusuz != "OFFLINE") {
@@ -161,15 +185,24 @@ function httpsReqNumInv(data, options) { //Ermittelt die Anzahl Unterzähler und
 				numinv++;
 				}
 		} catch(e) {
-				adapter.log.warn("JSON-parse-Fehler: " + e.message);
+				adapter.log.warn("JSON-parse-Fehler NumInv: " + e.message);
 		}			
-        adapter.setState('info.numinv'/*numinv*/,numinv-1,true);
+        adapter.setState('info.numinv'/*numinv*/, numinv-1, true);
         adapter.log.debug("Numer of Inverters/Meters :" + numinv);
 		adapter.log.debug("END Request: " + JSON.stringify(data));
+		
+		adapter.setObjectNotExists('INV', {
+        type: 'device',
+        role: '',
+        common: {
+            name: "Inverter"
+        },
+        native: {}
+		});
           
         defobjUZ(numinv); 
-    });   
-}); 
+		});   
+	}); 
  req.on('error', function(e) { // Fehler abfangen
         adapter.log.warn('ERROR: ' + e.message,"warn");
         });
@@ -182,26 +215,26 @@ function httpsReqNumInv(data, options) { //Ermittelt die Anzahl Unterzähler und
 } //end httpsReqNumInv
 
 function defobjUZ(numinv){ //Schlaufe mit Abfrage der Information pro Unterzähler und auslösen der Objekterstellung
-    for (i=0; i<numinv-1;i++) {
+    for (var i=0; i<numinv-1;i++) {
 		var data1 = '{"141":{"';
 		var data2 = '":{"119":null}}}';
-		var data = data1 + i.toString() + data2;
+		var datauz = data1 + i.toString() + data2;
 		var options = {
-			host: deviceIpAdress,
+			host: DeviceIpAdress,
 			path: cmd,
 			method: 'POST',
 			headers: {
 					'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
 					'Content-Type': 'application/json',
 					'Accept': 'applciation/json',
-					'Content-Length': data.length
+					'Content-Length': datauz.length
 					}
 			};
 			
 		adapter.log.debug("Options: " + JSON.stringify(options));
-		adapter.log.debug("Data: " + JSON.stringify(data));
+		adapter.log.debug("Data: " + JSON.stringify(datauz));
 		
-		httpsReqSetUZ(data, options, i);
+		httpsReqSetUZ(datauz, options, i);
     }  
 } //end defobjUZ
 
@@ -217,71 +250,60 @@ function httpsReqSetUZ(data, options, i) { //erstellt die Channels und Objekte p
         bodyChunks.push(chunk);
 
     }).on('end', function() {
-        var body = Buffer.concat(bodyChunks);
+        var bodyuz = Buffer.concat(bodyChunks);
         // ...und/oder das Gesamtergebnis (body).
-        adapter.log.debug("body: " + body);
-        try{
-			var dataJ = (JSON.parse(body));
-                
-				
-
-// create Channel DeviceID
-    adapter.setObjectNotExists('INV.', {
-        type: 'channel',
-        role: '',
-        common: {
-            name: (dataJ[141][i.toString()][119])
-        },
-        native: {}
-    });
-    // create States
-    adapter.setObjectNotExists('INV.' + (dataJ[141][i.toString()][119]),{
-        type: 'state',
-        common: {
-            name: 'PAC',
-            desc: 'Power AC',
-            type: 'number',
-            read: true,
-            write: false
-        },
-        native: {}
-    });
-	
-	// create States
-    adapter.setObjectNotExists('INV.' + (dataJ[141][i.toString()][119]),{
-        type: 'state',
-        common: {
-            name: 'status',
-            desc: 'Staus of Inverter',
-            type: 'string',
-            read: true,
-            write: false
-        },
-        native: {}
-    });
-	
-	// create States
-    adapter.setObjectNotExists('INV.' + (dataJ[141][i.toString()][119]),{
-        type: 'state',
-        common: {
-            name: 'statusSE',
-            desc: 'Staus Smart Energy',
-            type: 'string',
-            read: true,
-            write: false
-        },
-        native: {}
-    });
-            names.push(dataJ[141][i.toString()][119]);
+        adapter.log.debug("body: " + bodyuz);
+        
+		try{
+		var dataJuz = (JSON.parse(bodyuz));
+			
+		// create Channel Inverter(i)
+		adapter.setObjectNotExists('INV.' + (dataJuz[141][i.toString()][119]).toString(), {
+			type: 'channel',
+			role: '',
+			common: {
+				name: "Inverter" + (dataJuz[141][i.toString()][119]).toString()
+			},
+			native: {}
+		});
+		
+		// create States PAC/Status Inverter(i)
+		adapter.setObjectNotExists('INV.' + (dataJuz[141][i.toString()][119]).toString() + ".PAC",{
+			type: 'state',
+			common: {
+				name: 'PAC',
+				desc: 'Power AC',
+				type: 'number',
+				read: true,
+				write: false,
+				unit: "W"
+			},
+			native: {}
+		});
+		
+		adapter.setObjectNotExists('INV.' + (dataJuz[141][i.toString()][119]) + ".status",{
+			type: 'state',
+			common: {
+				name: 'status',
+				desc: 'Staus of Inverter',
+				type: 'string',
+				read: true,
+				write: false
+			},
+			native: {}
+		});
+  			
+		names.push(dataJuz[141][i.toString()][119]);
+		adapter.log.debug("Inverters: " + names);
+		
 		} catch(e) {
-			adapter.log.warn("JSON-parse-Fehler: " + e.message);
+				adapter.log.warn("JSON-parse-Fehler SetUZ: " + e.message);
 		}
-     
-        });
+		});
 
     });
     
-    req.on('error', function(e) { // Fehler abfangen
+ req.on('error', function(e) { // Fehler abfangen
         adapter.log.warn('ERROR: ' + e.message,"warn");
     });
 
@@ -289,12 +311,23 @@ function httpsReqSetUZ(data, options, i) { //erstellt die Channels und Objekte p
     // write data to request body
     (data ? req.write(data) : adapter.log.warn("Daten: keine Daten im Body angegeben angegeben"));
         
-    req.end();
+req.end();
 } //End httpsReqSetUZ
 
 
-function httpsReqDataStandard(cmd, options) { //Abfrage der Standardwerte
+function httpsReqDataStandard(cmd) { //Abfrage der Standardwerte
 	var data = '{"801":{"170":null}}';
+	var options = {
+		host: DeviceIpAdress,
+		path: cmd,
+		method: 'POST',
+		headers: {
+			'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+			'Content-Type': 'application/json',
+			'Accept': 'applciation/json',
+			'Content-Length': data.length
+		}
+	};   
 	var req = https.request(options, function(res) {
     adapter.log.debug("http Status: " + res.statusCode);
     adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (Rückmeldung vom Webserver)
@@ -312,6 +345,7 @@ function httpsReqDataStandard(cmd, options) { //Abfrage der Standardwerte
         
 			try{
                 var json = (JSON.parse(body));
+				adapter.log.debug("Body: " + body);
 				adapter.setState('info.lastSync', json[801][170][100] , true);
 				adapter.setState('info.totalPower', json[801][170][116], true);
 				adapter.setState('status.pac', json[801][170][101], true);
@@ -330,12 +364,130 @@ function httpsReqDataStandard(cmd, options) { //Abfrage der Standardwerte
 				adapter.setState('status.consyieldyear', json[801][170][114], true);
 				adapter.setState('status.consyieldtotal', json[801][170][115], true);
 			} catch(e) {
-				adapter.log.warn("JSON-parse-Fehler: " + e.message);
+				adapter.log.warn("JSON-parse-Fehler DataStandard: " + e.message);
 			}
+			httpsReqDataUZ(cmd, names, httpsReqStatUZ(cmd, names));
        });
 	});
 	
    
+    req.on('error', function(e) { // Fehler abfangen
+        adapter.log.warn('ERROR: ' + e.message,"warn");
+    });
+
+    adapter.log.debug("Data to request body: " + data);
+    // write data to request body
+    (data ? req.write(data) : adapter.log.warn("Daten: keine Daten im Body angegeben angegeben"));
+    req.end();
+
+} //end httpsReqDataStandard()
+
+function httpsReqDataUZ(cmd, names){ //Abfrage der Unterzählerwerte
+    var data = '{"782":null}';
+    var options = {
+    host: DeviceIpAdress,
+    path: cmd,
+    method: 'POST',
+    headers: {
+        'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+        'Content-Type': 'application/json',
+        'Accept': 'applciation/json',
+        'Content-Length': data.length
+        }
+    };   
+    
+    var req = https.request(options, function(res) {
+    adapter.log.debug("http Status: " + res.statusCode);
+    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (Rückmeldung vom Webserver)
+    var bodyChunks  = [];
+    var chunkLine   = 0;
+    res.on('data', function(chunk) {
+        chunkLine = chunkLine + 1;
+        // Hier können die einzelnen Zeilen verarbeitet werden...
+        bodyChunks.push(chunk);
+
+    }).on('end', function() {
+        var body = Buffer.concat(bodyChunks);
+        // ...und/oder das Gesamtergebnis (body).
+        adapter.log.debug("body: " + body);
+		
+		try{		
+		var dataJUZ = (JSON.parse(body));
+		adapter.log.debug("Inv. to treat: " + names);
+		var namLeng = names.length;
+		adapter.log.debug("Anzahl Elemente: " + namLeng);
+		for (var uzi=0; uzi<namLeng; uzi++){
+			adapter.log.debug("INV." + names[uzi] + ": " + dataJUZ[782][uzi]);
+			adapter.setState("INV." + names[uzi] + ".PAC", dataJUZ[782][uzi], true);
+		}
+		adapter.log.debug("END");
+		
+		} catch(e) {
+				adapter.log.warn("JSON-parse-Fehler DataUZ: " + e.message);
+		}
+		httpsReqStatUZ(cmd, names);
+     
+        });
+
+    });
+    
+    req.on('error', function(e) { // Fehler abfangen
+        adapter.log.warn('ERROR: ' + e.message,"warn");
+    });
+
+    adapter.log.debug("Data to request body: " + data);
+    // write data to request body
+    (data ? req.write(data) : adapter.log.warn("Daten: keine Daten im Body angegeben angegeben"));
+     
+    req.end();	
+} //End httpsReqDataUZ
+
+function httpsReqStatUZ(cmd, names){ //Abfrage der Unterzählerwerte
+    var data = '{"608":null}';
+    var options = {
+    host: DeviceIpAdress,
+    path: cmd,
+    method: 'POST',
+    headers: {
+        'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+        'Content-Type': 'application/json',
+        'Accept': 'applciation/json',
+        'Content-Length': data.length
+        }
+    };   
+    
+    var req = https.request(options, function(res) {
+    adapter.log.debug("http Status: " + res.statusCode);
+    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (Rückmeldung vom Webserver)
+    var bodyChunks  = [];
+    var chunkLine   = 0;
+    res.on('data', function(chunk) {
+        chunkLine = chunkLine + 1;
+        // Hier können die einzelnen Zeilen verarbeitet werden...
+        bodyChunks.push(chunk);
+
+    }).on('end', function() {
+        var body = Buffer.concat(bodyChunks);
+        // ...und/oder das Gesamtergebnis (body).
+        adapter.log.debug("body: " + body);
+			try{
+			var dataJSUZ = (JSON.parse(body));
+			adapter.log.debug("Inv. to treat: " + names);
+			var namLeng = names.length;
+			adapter.log.debug("Anzahl Elemente: " + namLeng);
+			for (var uzj=0; uzj<namLeng; uzj++){
+				adapter.log.debug("INV." + names[uzj] + ": " + dataJSUZ[608][uzj]);
+				adapter.setState("INV." + names[uzj] + ".status", dataJSUZ[608][uzj], true);
+			}
+            adapter.log.debug("END");
+      
+			} catch(e) {
+				adapter.log.warn("JSON-parse-Fehler StatUZ: " + e.message);
+		}
+        });
+
+    });
+    
     req.on('error', function(e) { // Fehler abfangen
         adapter.log.debug('ERROR: ' + e.message,"warn");
     });
@@ -343,12 +495,6 @@ function httpsReqDataStandard(cmd, options) { //Abfrage der Standardwerte
     adapter.log.debug("Data to request body: " + data);
     // write data to request body
     (data ? req.write(data) : adapter.log.debug("Daten: keine Daten im Body angegeben angegeben"));
-    req.end();
-
-} //end httpsReq()
-
-function httpsReqDataUZ(cmd, options){ //Abfrage der Unterzählerwerte
-	
-	//*******************Abfragen der einzelnen Werte und Stati der Unterzähler
-	
-} //End httpsReqDataUZ
+     
+    req.end();	
+} //End httpsReqStatUZ

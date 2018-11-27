@@ -1,6 +1,6 @@
 {
 	"common": {
-		"name": "solarlog_test",
+		"name": "solarlog",
 		"version": "0.0.3",
 		"news": {
 			"0.0.3": {
@@ -26,7 +26,7 @@
 			"de": "Überwache deinen Solarlog Meter"
 		},
 		"authors": [
-			"Marcel Adam <marceladam@gmx.ch>"
+			"forelleblau <marceladam@gmx.ch>"
 		],
 		"docs": {
 			"de": "docs/de/README.md"
@@ -379,6 +379,5 @@
 					
 			}
 		}
-	
 	]
 }
