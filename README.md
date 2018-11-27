@@ -8,7 +8,7 @@ Set Solarlog - IP-Adress und polling - intervall
 ### 0.0.3
 New functions added!
 - reads all defined inverters/meters 
-- sets objects named as in solarlog 
+- sets objects named as in solarlog (INV-Channel)
 - gets values (current production/consumption) and states for each inverter
 
 Planned for next version: reading solarlog smart energy settings and states
