@@ -262,7 +262,7 @@ function httpsReqSetUZ(data, options, i) { //erstellt die Channels und Objekte p
 			type: 'channel',
 			role: '',
 			common: {
-				name: "Inverter" + (dataJuz[141][i.toString()][119]).toString()
+				name: "" + (dataJuz[141][i.toString()][119]).toString()
 			},
 			native: {}
 		});
