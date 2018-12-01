@@ -1,6 +1,6 @@
 {
 	"common": {
-		"name": "solarlog",
+		"name": "solarlog_test",
 		"version": "0.0.4",
 		"news": {
 			"0.0.4": {
@@ -20,7 +20,7 @@
 				"de": "Initiale Version"
 			}
 		},
-		"title": "solarlog",
+		"title": "solarlog_test",
 		"titleLang": {
 			"en": "solarlogMonitor",
 			"de": "Monitor"
@@ -40,7 +40,7 @@
 		"icon": "solarlog.png",
 		"materialize": true,
 		"enabled": true,
-		"extIcon": "https://raw.githubusercontent.com/forelleblau/ioBroker.solarlog/master/admin/solarlog.png",
+		"extIcon": "https://raw.githubusercontent.com/forelleblau/ioBroker.solarlog_test/master/admin/solarlog.png",
 		"keywords": [
 			"solarlog",
 			"photovoltaics",
@@ -48,7 +48,7 @@
 			"energy",
 			"sun"
 		],
-		"readme": "https://github.com/forelleblau/ioBroker.solarlog/blob/master/README.md",
+		"readme": "https://github.com/forelleblau/ioBroker.solarlog_test/blob/master/README.md",
 		"loglevel": "info",
 		"type": "energy",
 		"license": "MIT",
