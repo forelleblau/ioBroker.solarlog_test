@@ -1,8 +1,12 @@
 {
 	"common": {
-		"name": "solarlog_test",
-		"version": "0.0.3",
+		"name": "solarlog",
+		"version": "0.0.4",
 		"news": {
+			"0.0.4": {
+				"en": "better readme, inverter-import optional",
+				"de": "Erweiterte Readme, Import der Daten aller Unterzähler optional möglich"
+			},
 			"0.0.3": {
 				"en": "better readme, import data of all inverters and meters",
 				"de": "Erweiterte Readme, Import der Daten aller Unterzähler"
@@ -16,7 +20,7 @@
 				"de": "Initiale Version"
 			}
 		},
-		"title": "solarlog_test",
+		"title": "solarlog",
 		"titleLang": {
 			"en": "solarlogMonitor",
 			"de": "Monitor"
@@ -36,7 +40,7 @@
 		"icon": "solarlog.png",
 		"materialize": true,
 		"enabled": true,
-		"extIcon": "https://raw.githubusercontent.com/forelleblau/ioBroker.solarlog_test/master/admin/solarlog.png",
+		"extIcon": "https://raw.githubusercontent.com/forelleblau/ioBroker.solarlog/master/admin/solarlog.png",
 		"keywords": [
 			"solarlog",
 			"photovoltaics",
@@ -44,7 +48,7 @@
 			"energy",
 			"sun"
 		],
-		"readme": "https://github.com/forelleblau/ioBroker.solarlog_test/blob/master/README.md",
+		"readme": "https://github.com/forelleblau/ioBroker.solarlog/blob/master/README.md",
 		"loglevel": "info",
 		"type": "energy",
 		"license": "MIT",
@@ -52,7 +56,8 @@
 	},
 	"native": {
 		"host": "",
-		"pollInterval":300000
+		"pollInterval":300000,
+		"InvImp": true
 	},
 	"objects": [],
 	"instanceObjects": [
