@@ -40,7 +40,7 @@ adapter.on('unload', function (callback) {
 adapter.on('objectChange', function (id, obj) {
     // Warning, obj can be null if it was deleted
     adapter.log.info('objectChange ' + id + ' ' + JSON.stringify(obj));
-});
+}); 
 
 // is called if a subscribed state changes
 adapter.on('stateChange', function (id, state) {
@@ -82,6 +82,7 @@ function main() {
     var statusuz ="on";
 	var numinv = 0;
 	var uzimp = adapter.config.InvImp;
+	adapter.log.debug("InvImp: " + adapter.config.InvImp);
 	var data='{"608":null}';
 	var options = {
 		host: DeviceIpAdress,
@@ -101,22 +102,26 @@ function main() {
 	adapter.log.debug("Options: " + JSON.stringify(options));
 	adapter.log.debug("Data: " + JSON.stringify(data));
 	
-	if (uzimp=true){
-    httpsReqNumInv(data, options, numinv, defobjUZ()); //Anlegen eines Channels pro Unterzähler mit den Objekten Wert und Status
+	if (adapter.config.InvImp = true){
+		adapter.log.debug("uzimp: " + Boolean(uzimp));
+		adapter.log.debug("WR Importieren");
+    httpsReqNumInv(data, options, numinv, uzimp, defobjUZ()); //Anlegen eines Channels pro Unterzähler mit den Objekten Wert und Status
 	
-	testend = setInterval(test, 2000); //überprüfen ob alle Channels angelegt sind.
-    }      
+	testend = setInterval(test, 2000); //überprüfen ob alle Channels angelegt sind. 
+    }
+	else{}
 	
-	setTimeout(function(){httpsReqDataStandard(cmd);},300000); //abfragen der Standard-Werte
+	
+	setTimeout(function(){httpsReqDataStandard(cmd, uzimp);},300000); //abfragen der Standard-Werte
 	
 		
     if (!polling) {
         polling = setTimeout(function repeat() { // poll states every [30] seconds
 		if (uzimp=true) {
-            httpsReqDataStandard(cmd, httpsReqDataUZ(cmd, names));
+            httpsReqDataStandard(cmd, uzimp, httpsReqDataUZ(cmd, names));
 		}
 		else{
-			httpReqDataStandard(cmd);
+			httpsReqDataStandard(cmd, uzimp);
 		}
 			setTimeout(repeat, pollingTime);
         }, pollingTime);
@@ -185,7 +190,7 @@ function httpsReqNumInv(data, options, numinv) { //Ermittelt die Anzahl Unterzä
 		try{
 			var dataJ=JSON.parse(body);
 			
-			while (statusuz != "OFFLINE" && numinv < 100) {
+			while (statusuz != "OFFLINE" || statusuz != "ACCESS DENIED" && numinv < 100) {
 				statusuz = (dataJ[608][numinv.toString()]);  
 					if (statusuz != "OFFLINE") {
 					   adapter.log.debug(dataJ[608][numinv.toString()]);
@@ -378,7 +383,8 @@ function httpsReqDataStandard(cmd) { //Abfrage der Standardwerte
 			}
 			if (uzimp=true){
 			httpsReqDataUZ(cmd, names, httpsReqStatUZ(cmd, names));
-			{
+			}
+			else{}
        });
 	});
 	
