@@ -1,5 +1,5 @@
 /**
- * solarlog adapter
+ * solarlog_test adapter
  */
 
 /* jshint -W097 */// jshint strict:false
@@ -7,13 +7,14 @@
 'use strict';
 
 const utils = require(__dirname + '/lib/utils'); // Get common adapter utils
-const adapter = new utils.Adapter('solarlog');
+const adapter = new utils.Adapter('solarlog_test');
 var DeviceIpAdress;
 var https = require('http'); 
 const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
 var statusuz ="on";
 var numinv = 0;
 var names =[];
+var uzimp;
 var testend;
 var testj= 0;
 var testi= 0;
