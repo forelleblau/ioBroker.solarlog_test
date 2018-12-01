@@ -14,7 +14,7 @@ const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
 var statusuz ="on";
 var numinv = 0;
 var names =[];
-var uzimp;
+var uzimp = false;
 var testend;
 var testj= 0;
 var testi= 0;
@@ -81,7 +81,7 @@ function main() {
     const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
     var statusuz ="on";
 	var numinv = 0;
-	boolean uzimp = adapter.config.invimp;
+	var uzimp = adapter.config.invimp;
 	adapter.log.debug("InvImp: " + adapter.config.invimp);
 	adapter.log.debug("uzimp: " + uzimp);
 	var data='{"608":null}';
@@ -106,10 +106,9 @@ function main() {
 	if (adapter.config.invimp = true){
 		adapter.log.debug("uzimp: " + uzimp);
 		adapter.log.debug("WR Importieren");
-    httpsReqNumInv(data, options, numinv, uzimp, defobjUZ()); //Anlegen eines Channels pro Unterzähler mit den Objekten Wert und Status
-	
-	testend = setInterval(test, 2000); //überprüfen ob alle Channels angelegt sind. 
-    }
+    		httpsReqNumInv(data, options, numinv, uzimp, defobjUZ()); //Anlegen eines Channels pro Unterzähler mit den Objekten Wert und Status
+		testend = setInterval(test, 2000); //überprüfen ob alle Channels angelegt sind. 
+    		}
 	else{}
 	
 	
@@ -119,7 +118,7 @@ function main() {
     if (!polling) {
         polling = setTimeout(function repeat() { // poll states every [30] seconds
 		if (uzimp=true) {
-            httpsReqDataStandard(cmd, uzimp, httpsReqDataUZ(cmd, names));
+		    httpsReqDataStandard(cmd, uzimp, httpsReqDataUZ(cmd, names));
 		}
 		else{
 			httpsReqDataStandard(cmd, uzimp);
