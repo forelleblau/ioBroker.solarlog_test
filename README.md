@@ -1,10 +1,26 @@
-# ioBroker.solarlog_test
+![Logo](admin/solarlog.png)
+# ioBroker.solarlog
+
+[![NPM version](http://img.shields.io/npm/v/iobroker.solarlog.svg)](https://www.npmjs.com/package/iobroker.solarlog)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.solarlog.svg)](https://www.npmjs.com/package/iobroker.solarlog)
+
+[![NPM](https://nodei.co/npm/iobroker.solarlog.png?downloads=true)](https://nodei.co/npm/iobroker.solarlog/)
+
 An ioBroker adapter for solarlog - devices
 
+The open JSON-interface (offene Json-Schnittstelle) has to be activated in the Solarlog's configuration menue (Konfiguration - System - Zugangskontrolle - Offene Json-Schnittstelle: akrivieren.)
+
 Install adapter, create instance.
-Set Solarlog - IP-Adress und polling - intervall 
+Set Solarlog - IP-adress and polling - intervall 
 
 ## Changelog
+### 0.0.4
+- Inverter-import optional
+- Error - logs refer to functions
+- better readme
+
+Planned for next version: reading solarlog smart energy settings and states
+
 ### 0.0.3
 New functions added!
 - reads all defined inverters/meters 

@@ -7,7 +7,7 @@
 'use strict';
 
 const utils = require(__dirname + '/lib/utils'); // Get common adapter utils
-const adapter = new utils.Adapter('solarlog_test');
+const adapter = new utils.Adapter('solarlog');
 var DeviceIpAdress;
 var https = require('http'); 
 const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
@@ -80,6 +80,7 @@ function main() {
     const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
     var statusuz ="on";
 	var numinv = 0;
+	var uzimp = adapter.config.InvImp;
 	var data='{"608":null}';
 	var options = {
 		host: DeviceIpAdress,
@@ -98,18 +99,24 @@ function main() {
 	
 	adapter.log.debug("Options: " + JSON.stringify(options));
 	adapter.log.debug("Data: " + JSON.stringify(data));
-
+	
+	if (uzimp=true){
     httpsReqNumInv(data, options, numinv, defobjUZ()); //Anlegen eines Channels pro Unterzähler mit den Objekten Wert und Status
 	
 	testend = setInterval(test, 2000); //überprüfen ob alle Channels angelegt sind.
-            
+    }      
 	
 	setTimeout(function(){httpsReqDataStandard(cmd);},300000); //abfragen der Standard-Werte
 	
 		
     if (!polling) {
         polling = setTimeout(function repeat() { // poll states every [30] seconds
+		if (uzimp=true) {
             httpsReqDataStandard(cmd, httpsReqDataUZ(cmd, names));
+		}
+		else{
+			httpReqDataStandard(cmd);
+		}
 			setTimeout(repeat, pollingTime);
         }, pollingTime);
     } // endIf
@@ -204,10 +211,10 @@ function httpsReqNumInv(data, options, numinv) { //Ermittelt die Anzahl Unterzä
 		});   
 	}); 
  req.on('error', function(e) { // Fehler abfangen
-        adapter.log.warn('ERROR: ' + e.message,"warn");
+        adapter.log.warn('ERROR ReqNumInv: ' + e.message,"warn");
         });
 
-    adapter.log.warn("Data to request body: " + data);
+    adapter.log.debug("Data to request body: " + data);
     // write data to request body
     (data ? req.write(data) : adapter.log.warn("Daten: keine Daten im Body angegeben angegeben"));
  req.end();              
@@ -274,6 +281,7 @@ function httpsReqSetUZ(data, options, i) { //erstellt die Channels und Objekte p
 				name: 'PAC',
 				desc: 'Power AC',
 				type: 'number',
+				role: "value.pac",
 				read: true,
 				write: false,
 				unit: "W"
@@ -287,6 +295,7 @@ function httpsReqSetUZ(data, options, i) { //erstellt die Channels und Objekte p
 				name: 'status',
 				desc: 'Staus of Inverter',
 				type: 'string',
+				role: "info.status",
 				read: true,
 				write: false
 			},
@@ -304,7 +313,7 @@ function httpsReqSetUZ(data, options, i) { //erstellt die Channels und Objekte p
     });
     
  req.on('error', function(e) { // Fehler abfangen
-        adapter.log.warn('ERROR: ' + e.message,"warn");
+        adapter.log.warn('ERROR ReqSetUZ: ' + e.message,"warn");
     });
 
     adapter.log.debug("Data to request body: " + data);
@@ -366,13 +375,15 @@ function httpsReqDataStandard(cmd) { //Abfrage der Standardwerte
 			} catch(e) {
 				adapter.log.warn("JSON-parse-Fehler DataStandard: " + e.message);
 			}
+			if (uzimp=true){
 			httpsReqDataUZ(cmd, names, httpsReqStatUZ(cmd, names));
+			{
        });
 	});
 	
    
     req.on('error', function(e) { // Fehler abfangen
-        adapter.log.warn('ERROR: ' + e.message,"warn");
+        adapter.log.warn('ERROR ReqDataStandard: ' + e.message,"warn");
     });
 
     adapter.log.debug("Data to request body: " + data);
@@ -432,7 +443,7 @@ function httpsReqDataUZ(cmd, names){ //Abfrage der Unterzählerwerte
     });
     
     req.on('error', function(e) { // Fehler abfangen
-        adapter.log.warn('ERROR: ' + e.message,"warn");
+        adapter.log.warn('ERROR ReqDataUZ: ' + e.message,"warn");
     });
 
     adapter.log.debug("Data to request body: " + data);
@@ -489,7 +500,7 @@ function httpsReqStatUZ(cmd, names){ //Abfrage der Unterzählerwerte
     });
     
     req.on('error', function(e) { // Fehler abfangen
-        adapter.log.debug('ERROR: ' + e.message,"warn");
+        adapter.log.debug('ERROR ReqStatUZ: ' + e.message,"warn");
     });
 
     adapter.log.debug("Data to request body: " + data);

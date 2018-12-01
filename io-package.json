@@ -4,8 +4,8 @@
 		"version": "0.0.4",
 		"news": {
 			"0.0.4": {
-				"en": "better readme, inverter-import optional",
-				"de": "Erweiterte Readme, Import der Daten aller Unterzähler optional möglich"
+				"en": "better readme, error-logging refers to functions, inverter-import optional",
+				"de": "Erweiterte Readme, Error-logging nennt funktionen, Import der Daten aller Unterzähler optional möglich"
 			},
 			"0.0.3": {
 				"en": "better readme, import data of all inverters and meters",
