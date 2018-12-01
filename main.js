@@ -14,7 +14,7 @@ const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
 var statusuz ="on";
 var numinv = 0;
 var names =[];
-var uzimp = false;
+var uzimp = "false";
 var testend;
 var testj= 0;
 var testi= 0;
@@ -81,7 +81,7 @@ function main() {
     const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
     var statusuz ="on";
 	var numinv = 0;
-	var uzimp = adapter.config.invimp;
+	var uzimp = (adapter.config.invimp).toString();
 	adapter.log.debug("InvImp: " + adapter.config.invimp);
 	adapter.log.debug("uzimp: " + uzimp);
 	var data='{"608":null}';
@@ -103,30 +103,39 @@ function main() {
 	adapter.log.debug("Options: " + JSON.stringify(options));
 	adapter.log.debug("Data: " + JSON.stringify(data));
 	
-	if (adapter.config.invimp = true){
+	if (uzimp == "true"){
 		adapter.log.debug("uzimp: " + uzimp);
 		adapter.log.debug("WR Importieren");
-    		httpsReqNumInv(data, options, numinv, uzimp, defobjUZ()); //Anlegen eines Channels pro Unterz√§hler mit den Objekten Wert und Status
-		testend = setInterval(test, 2000); //√ºberpr√ºfen ob alle Channels angelegt sind. 
-    		}
-	else{}
-	
-	
-	setTimeout(function(){httpsReqDataStandard(cmd, uzimp);},300000); //abfragen der Standard-Werte
+    	
+		httpsReqNumInv(data, options, numinv, uzimp, defobjUZ()); //Anlegen eines Channels pro Unterz‰hler mit den Objekten Wert und Status
+		
+		testend = setInterval(test, 2000); //¸berpr¸fen ob alle Channels angelegt sind. 
+    	
+		setTimeout(function(){httpsReqDataStandard(cmd, uzimp);},300000); //abfragen der Standard-Werte
 	
 		
-    if (!polling) {
-        polling = setTimeout(function repeat() { // poll states every [30] seconds
-		if (uzimp=true) {
-		    httpsReqDataStandard(cmd, uzimp, httpsReqDataUZ(cmd, names));
+		if (!polling) {
+			polling = setTimeout(function repeat() { // poll states every [30] seconds
+				httpsReqDataStandard(cmd, uzimp, httpsReqDataUZ(cmd, names));
+				setTimeout(repeat, pollingTime);
+			}, pollingTime);
+		} // endIf
+
 		}
-		else{
-			httpsReqDataStandard(cmd, uzimp);
-		}
-			setTimeout(repeat, pollingTime);
-        }, pollingTime);
-    } // endIf
-	
+	else{
+		adapter.log.debug("uzimp: " + uzimp);
+		adapter.log.debug("WR nicht Importieren");
+		httpsReqDataStandard(cmd, uzimp);
+			
+		if (!polling) {
+			polling = setTimeout(function repeat() { // poll states every [30] seconds
+			
+				httpsReqDataStandard(cmd, uzimp);
+			
+				setTimeout(repeat, pollingTime);
+			}, pollingTime);
+		} // endIf
+	}
     // all states changes inside the adapters namespace are subscribed
     adapter.subscribeStates('*');
 
@@ -152,7 +161,7 @@ function test() {
 			adapter.log.warn("Nicht alle WR/Meter gefunden");
 			testj++;
 			  if (testj>3){
-				adapter.log.warn("Fehler, noch nicht alle Unterz√§hler angelegt");
+				adapter.log.warn("Fehler, noch nicht alle Unterz‰hler angelegt");
 				clearInterval(testend);
 				}
 			}
@@ -172,15 +181,15 @@ function check(uz) {
 	});
 } // END check()
 
-function httpsReqNumInv(data, options, numinv) { //Ermittelt die Anzahl Unterz√§hler und l√∂st das Anlegen der Channels/Objekte aus.
+function httpsReqNumInv(data, options, numinv) { //Ermittelt die Anzahl Unterz‰hler und lˆst das Anlegen der Channels/Objekte aus.
 	var req = https.request(options, function(res) {
     adapter.log.debug("http Status: " + res.statusCode);
-    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R√É¬ºckmeldung vom Webserver)
+    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R√ºckmeldung vom Webserver)
     var bodyChunks  = [];
     var chunkLine   = 0;
     res.on('data', function(chunk) {
         chunkLine = chunkLine + 1;
-        // Hier k√É¬∂nnen die einzelnen Zeilen verarbeitet werden...
+        // Hier k√∂nnen die einzelnen Zeilen verarbeitet werden...
         bodyChunks.push(chunk);
 
     }).on('end', function() {
@@ -190,7 +199,7 @@ function httpsReqNumInv(data, options, numinv) { //Ermittelt die Anzahl Unterz√§
 		try{
 			var dataJ=JSON.parse(body);
 			
-			while (statusuz != "OFFLINE" || statusuz != "ACCESS DENIED" && numinv < 100) {
+			while (statusuz != "OFFLINE" && numinv < 100) {
 				statusuz = (dataJ[608][numinv.toString()]);  
 					if (statusuz != "OFFLINE") {
 					   adapter.log.debug(dataJ[608][numinv.toString()]);
@@ -227,7 +236,7 @@ function httpsReqNumInv(data, options, numinv) { //Ermittelt die Anzahl Unterz√§
   
 } //end httpsReqNumInv
 
-function defobjUZ(numinv){ //Schlaufe mit Abfrage der Information pro Unterz√§hler und ausl√∂sen der Objekterstellung
+function defobjUZ(numinv){ //Schlaufe mit Abfrage der Information pro Unterz‰hler und auslˆsen der Objekterstellung
     for (var i=0; i<numinv-1;i++) {
 		var data1 = '{"141":{"';
 		var data2 = '":{"119":null}}}';
@@ -251,15 +260,15 @@ function defobjUZ(numinv){ //Schlaufe mit Abfrage der Information pro Unterz√§hl
     }  
 } //end defobjUZ
 
-function httpsReqSetUZ(data, options, i) { //erstellt die Channels und Objekte pro Unterz√§hler
+function httpsReqSetUZ(data, options, i) { //erstellt die Channels und Objekte pro Unterz‰hler
     var req = https.request(options, function(res) {
     adapter.log.debug("http Status: " + res.statusCode);
-    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R√ºckmeldung vom Webserver)
+    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R¸ckmeldung vom Webserver)
 	var bodyChunks  = [];
     var chunkLine   = 0;
     res.on('data', function(chunk) {
         chunkLine = chunkLine + 1;
-        // Hier k√∂nnen die einzelnen Zeilen verarbeitet werden...
+        // Hier kˆnnen die einzelnen Zeilen verarbeitet werden...
         bodyChunks.push(chunk);
 
     }).on('end', function() {
@@ -345,12 +354,12 @@ function httpsReqDataStandard(cmd) { //Abfrage der Standardwerte
 	};   
 	var req = https.request(options, function(res) {
     adapter.log.debug("http Status: " + res.statusCode);
-    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R√ºckmeldung vom Webserver)
+    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R¸ckmeldung vom Webserver)
     var bodyChunks  = [];
     var chunkLine   = 0;
     res.on('data', function(chunk) {
         chunkLine = chunkLine + 1;
-        // Hier k√∂nnen die einzelnen Zeilen verarbeitet werden...
+        // Hier kˆnnen die einzelnen Zeilen verarbeitet werden...
         bodyChunks.push(chunk);
     }).on('end', function() {
 		adapter.log.debug("no more date in response");
@@ -381,11 +390,11 @@ function httpsReqDataStandard(cmd) { //Abfrage der Standardwerte
 			} catch(e) {
 				adapter.log.warn("JSON-parse-Fehler DataStandard: " + e.message);
 			}
-			if (uzimp=true){
-			httpsReqDataUZ(cmd, names, httpsReqStatUZ(cmd, names));
+			if (uzimp=="true"){
+				httpsReqDataUZ(cmd, names, httpsReqStatUZ(cmd, names));
 			}
-			else{}
-       });
+			
+	       });
 	});
 	
    
@@ -400,7 +409,7 @@ function httpsReqDataStandard(cmd) { //Abfrage der Standardwerte
 
 } //end httpsReqDataStandard()
 
-function httpsReqDataUZ(cmd, names){ //Abfrage der Unterz√§hlerwerte
+function httpsReqDataUZ(cmd, names){ //Abfrage der Unterz‰hlerwerte
     var data = '{"782":null}';
     var options = {
     host: DeviceIpAdress,
@@ -416,12 +425,12 @@ function httpsReqDataUZ(cmd, names){ //Abfrage der Unterz√§hlerwerte
     
     var req = https.request(options, function(res) {
     adapter.log.debug("http Status: " + res.statusCode);
-    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R√ºckmeldung vom Webserver)
+    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R¸ckmeldung vom Webserver)
     var bodyChunks  = [];
     var chunkLine   = 0;
     res.on('data', function(chunk) {
         chunkLine = chunkLine + 1;
-        // Hier k√∂nnen die einzelnen Zeilen verarbeitet werden...
+        // Hier kˆnnen die einzelnen Zeilen verarbeitet werden...
         bodyChunks.push(chunk);
 
     }).on('end', function() {
@@ -460,7 +469,7 @@ function httpsReqDataUZ(cmd, names){ //Abfrage der Unterz√§hlerwerte
     req.end();	
 } //End httpsReqDataUZ
 
-function httpsReqStatUZ(cmd, names){ //Abfrage der Unterz√§hlerwerte
+function httpsReqStatUZ(cmd, names){ //Abfrage der Unterz‰hlerwerte
     var data = '{"608":null}';
     var options = {
     host: DeviceIpAdress,
@@ -476,12 +485,12 @@ function httpsReqStatUZ(cmd, names){ //Abfrage der Unterz√§hlerwerte
     
     var req = https.request(options, function(res) {
     adapter.log.debug("http Status: " + res.statusCode);
-    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R√ºckmeldung vom Webserver)
+    adapter.log.debug('HEADERS: ' + JSON.stringify(res.headers), (res.statusCode != 200 ? "warn" : "info")); // Header (R¸ckmeldung vom Webserver)
     var bodyChunks  = [];
     var chunkLine   = 0;
     res.on('data', function(chunk) {
         chunkLine = chunkLine + 1;
-        // Hier k√∂nnen die einzelnen Zeilen verarbeitet werden...
+        // Hier kˆnnen die einzelnen Zeilen verarbeitet werden...
         bodyChunks.push(chunk);
 
     }).on('end', function() {

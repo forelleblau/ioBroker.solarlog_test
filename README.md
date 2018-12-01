@@ -1,5 +1,5 @@
 ![Logo](admin/solarlog.png)
-# ioBroker.solarlog
+# ioBroker.solarlog_test
 
 [![NPM version](http://img.shields.io/npm/v/iobroker.solarlog.svg)](https://www.npmjs.com/package/iobroker.solarlog)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.solarlog.svg)](https://www.npmjs.com/package/iobroker.solarlog)

@@ -23,7 +23,7 @@
 		"title": "solarlog_test",
 		"titleLang": {
 			"en": "solarlogMonitor",
-			"de": "Monitor"
+			"de": "SolarlogMonitor"
 		},
 		"desc": {
 			"en": "Monitor your solarlog meter",
@@ -57,7 +57,7 @@
 	"native": {
 		"host": "",
 		"pollInterval":300000,
-		"invimp": true
+		"InvImp": false
 	},
 	"objects": [],
 	"instanceObjects": [
@@ -65,7 +65,7 @@
 			"_id": "info",
 			"type": "channel",
 			"common": {
-				"name": "Information"
+			"name": "Information"
 			},
 			"native": {
 				
