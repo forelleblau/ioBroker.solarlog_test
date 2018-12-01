@@ -81,8 +81,9 @@ function main() {
     const cmd = "/getjp"; // Kommandos in der URL nach der Host-Adresse
     var statusuz ="on";
 	var numinv = 0;
-	var uzimp = adapter.config.InvImp;
-	adapter.log.debug("InvImp: " + adapter.config.InvImp);
+	boolean uzimp = adapter.config.invimp;
+	adapter.log.debug("InvImp: " + adapter.config.invimp);
+	adapter.log.debug("uzimp: " + uzimp);
 	var data='{"608":null}';
 	var options = {
 		host: DeviceIpAdress,
@@ -102,8 +103,8 @@ function main() {
 	adapter.log.debug("Options: " + JSON.stringify(options));
 	adapter.log.debug("Data: " + JSON.stringify(data));
 	
-	if (adapter.config.InvImp = true){
-		adapter.log.debug("uzimp: " + Boolean(uzimp));
+	if (adapter.config.invimp = true){
+		adapter.log.debug("uzimp: " + uzimp);
 		adapter.log.debug("WR Importieren");
     httpsReqNumInv(data, options, numinv, uzimp, defobjUZ()); //Anlegen eines Channels pro Unterzähler mit den Objekten Wert und Status
 	
